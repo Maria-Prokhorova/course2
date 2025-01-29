@@ -11,10 +11,10 @@ import java.util.Collection;
 
 @RestController
 @RequestMapping(path = "/exam/java")
-public class JavaQuestionController {
+public class JavaController {
     private final QuestionService service;
 
-    public JavaQuestionController(QuestionService service) {
+    public JavaController(QuestionService service) {
         this.service = service;
     }
 

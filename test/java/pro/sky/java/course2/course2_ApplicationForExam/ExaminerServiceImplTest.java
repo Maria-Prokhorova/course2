@@ -1,8 +1,9 @@
 package pro.sky.java.course2.course2_ApplicationForExam;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -14,9 +15,9 @@ import pro.sky.java.course2.course2_ApplicationForExam.service.JavaQuestionServi
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,45 +28,99 @@ public class ExaminerServiceImplTest {
     @InjectMocks
     private ExaminerServiceImpl out;
 
-    public static Collection<Question> QUESTIONS = new HashSet<>(Set.of(
-            new Question("Java question 1", "Java answer 1"),
-            new Question("Java question 2", "Java answer 2"),
-            new Question("Java question 3", "Java answer 3"),
-            new Question("Java question 4", "Java answer 4"),
-            new Question("Java question 5", "Java answer 5")
-    ));
+    @ParameterizedTest
+    @MethodSource("provideCorrectQuestionsForTest1")
+    public void shouldResultGetQuestions_whenNotCorrectAmount(Set<Question> questions, int minSizeSet, int maxSizeSet) {
+        //given
+        when(javaQuestionService.getAll()).thenReturn(questions);
 
-    @BeforeEach
-    public void setUp() {
-        when(javaQuestionService.getAll()).thenReturn(QUESTIONS);
-    }
-
-    @Test
-    public void shouldResultGetQuestions_whenNotCorrectAmount() {
-        assertThrows(ValidataException.class, () -> out.getQuestions(-2));
-        assertThrows(ValidataException.class, () -> out.getQuestions(8));
-
+        //then
+        assertThrows(ValidataException.class, () -> out.getQuestions(minSizeSet));
+        assertThrows(ValidataException.class, () -> out.getQuestions(maxSizeSet));
         verify(javaQuestionService, never()).getRandomQuestion();
     }
 
-    @Test
-    public void shouldResultGetQuestions_whenAmountIsEqualsSizeDataBase() {
-        Collection<Question> actual = out.getQuestions(5);
-        assertEquals(QUESTIONS, actual);
+    @ParameterizedTest
+    @MethodSource("provideCorrectQuestionsForTest2")
+    public void shouldResultGetQuestions_whenAmountIsEqualsSizeDataBase(Set<Question> questions, int amount) {
+        //given
+        when(javaQuestionService.getAll()).thenReturn(questions);
 
+        //when
+        Collection<Question> actual = out.getQuestions(amount);
+
+        //then
+        assertEquals(questions, actual);
         verify(javaQuestionService, never()).getRandomQuestion();
     }
 
-    @Test
-    public void shouldResultGetQuestions_whenCorrectAmount() {
-        when(javaQuestionService.getRandomQuestion()).thenReturn(new Question("question 1", "answer 1"),
-                new Question("question 2", "answer 2"));
+    @ParameterizedTest
+    @MethodSource("provideCorrectQuestionsForTest3")
+    public void shouldResultGetQuestions_whenCorrectAmount(Set<Question> questions, int amount, int time, Question question) {
+        //given
+        when(javaQuestionService.getAll()).thenReturn(questions);
+        when(javaQuestionService.getRandomQuestion()).thenReturn(question);
 
-        Collection<Question> actual = out.getQuestions(2);
-        Collection<Question> expected = new HashSet<>(Set.of(new Question("question 1", "answer 1"),
-                new Question("question 2", "answer 2")));
-        assertEquals(expected, actual);
+        //when
+        Collection<Question> actual = out.getQuestions(amount);
 
-        verify(javaQuestionService, times(2)).getRandomQuestion();
+        //then
+        assertTrue(actual.contains(question));
+        verify(javaQuestionService, times(time)).getRandomQuestion();
+    }
+
+    public static Stream<Arguments> provideCorrectQuestionsForTest1() {
+        return Stream.of(
+                Arguments.of(new HashSet<>(Set.of(
+                        new Question("question 1", "answer 1"),
+                        new Question("question 2", "answer 2"))), -2, 3),
+                Arguments.of(new HashSet<>(Set.of(
+                        new Question("question 1", "answer 1"),
+                        new Question("question 2", "answer 2"),
+                        new Question("question 3", "answer 3"))), -11, 5),
+                Arguments.of(new HashSet<>(Set.of(
+                        new Question("question 1", "answer 1"))), -1, 2),
+                Arguments.of(new HashSet<>(Set.of(
+                        new Question("question 1", "answer 1"),
+                        new Question("question 2", "answer 2"),
+                        new Question("question 3", "answer 3"),
+                        new Question("question 4", "answer 4"))), -4, 9)
+        );
+    }
+
+    public static Stream<Arguments> provideCorrectQuestionsForTest2() {
+        return Stream.of(
+                Arguments.of(new HashSet<>(Set.of(
+                        new Question("question 1", "answer 1"),
+                        new Question("question 2", "answer 2"))), 2),
+                Arguments.of(new HashSet<>(Set.of(
+                        new Question("question 1", "answer 1"),
+                        new Question("question 2", "answer 2"),
+                        new Question("question 3", "answer 3"))), 3),
+                Arguments.of(new HashSet<>(Set.of(
+                        new Question("question 1", "answer 1"))), 1),
+                Arguments.of(new HashSet<>(Set.of(
+                        new Question("question 1", "answer 1"),
+                        new Question("question 2", "answer 2"),
+                        new Question("question 3", "answer 3"),
+                        new Question("question 4", "answer 4"))), 4)
+        );
+    }
+
+    public static Stream<Arguments> provideCorrectQuestionsForTest3() {
+        return Stream.of(
+                Arguments.of(new HashSet<>(Set.of(
+                        new Question("question 1", "answer 1"),
+                        new Question("question 2", "answer 2"))), 1, 1, new Question ("question 2", "answer 2")),
+                Arguments.of(new HashSet<>(Set.of(
+                        new Question("question 1", "answer 1"),
+                        new Question("question 2", "answer 2"),
+                        new Question("question 3", "answer 3"))), 1, 1, new Question ("question 1", "answer 1")),
+                Arguments.of(new HashSet<>(Set.of(
+                        new Question("question 1", "answer 1"),
+                        new Question("question 2", "answer 2"),
+                        new Question("question 3", "answer 3"),
+                        new Question("question 4", "answer 4"))), 1, 1, new Question ("question 3", "answer 3"))
+        );
     }
 }

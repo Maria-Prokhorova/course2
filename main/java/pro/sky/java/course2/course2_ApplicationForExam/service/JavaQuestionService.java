@@ -5,12 +5,13 @@ import pro.sky.java.course2.course2_ApplicationForExam.model.Question;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class JavaQuestionService implements QuestionService {
 
-    Set<Question> questions = new HashSet<>();
+    private final Set<Question> questions = new HashSet<>();
+
+    private final Random random = new Random();
 
     @Override
     public Question add(String question, String answer) {
@@ -40,7 +41,7 @@ public class JavaQuestionService implements QuestionService {
 
     @Override
     public Question getRandomQuestion() {
-        int randomNumber = ThreadLocalRandom.current().nextInt(0, questions.size());
+        int randomNumber = random.nextInt(questions.size());
         List<Question> questionssList = new ArrayList<>(questions);
         return questionssList.get(randomNumber);
     }

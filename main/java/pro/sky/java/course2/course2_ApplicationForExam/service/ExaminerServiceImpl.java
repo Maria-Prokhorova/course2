@@ -10,7 +10,6 @@ import java.util.Set;
 
 @Service
 public class ExaminerServiceImpl implements ExaminerService {
-    //Random random;
 
     private final QuestionService questionService;
 
