@@ -1,20 +1,20 @@
 package pro.sky.java.course2.course2_ApplicationForExam.controller;
 
-import pro.sky.java.course2.course2_ApplicationForExam.model.Question;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import pro.sky.java.course2.course2_ApplicationForExam.service.JavaQuestionService;
+import pro.sky.java.course2.course2_ApplicationForExam.model.Question;
+import pro.sky.java.course2.course2_ApplicationForExam.service.MathQuestionService;
 
 import java.util.Collection;
 
 @RestController
-@RequestMapping(path = "/exam/java")
-public class JavaController {
-    private final JavaQuestionService service;
+@RequestMapping(path = "/exam/math")
+public class MathController {
+    private final MathQuestionService service;
 
-    public JavaController(JavaQuestionService service) {
+    public MathController(MathQuestionService service) {
         this.service = service;
     }
 

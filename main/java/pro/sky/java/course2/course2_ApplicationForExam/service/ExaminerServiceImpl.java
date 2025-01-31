@@ -6,29 +6,41 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Random;
 import java.util.Set;
 
 @Service
 public class ExaminerServiceImpl implements ExaminerService {
 
-    private final QuestionService questionService;
+    private final Random random = new Random();
 
-    public ExaminerServiceImpl(QuestionService questionService) {
-        this.questionService = questionService;
+    private final JavaQuestionService javaQuestionService;
+    private final MathQuestionService mathQuestionService;
+
+    public ExaminerServiceImpl(JavaQuestionService javaQuestionService, MathQuestionService mathQuestionService) {
+        this.javaQuestionService = javaQuestionService;
+        this.mathQuestionService = mathQuestionService;
     }
 
     @Override
     public Collection<Question> getQuestions(int amount) {
-        Set<Question> newQuestionsSet = new HashSet<>();
-        if (amount < 0 || amount > questionService.getAll().size()) {
+        int randomIndex = random.nextInt(amount);
+        Set<Question> randomQuestionsSet = new HashSet<>();
+
+        if (amount > (javaQuestionService.getAll().size() + mathQuestionService.getAll().size())) {
             throw new ValidataException("Задано неверное количество вопросов");
-        } else if (amount == questionService.getAll().size()) {
-            return questionService.getAll();
+        } else if (amount == (javaQuestionService.getAll().size() + mathQuestionService.getAll().size())) {
+            randomQuestionsSet.addAll(javaQuestionService.getAll());
+            randomQuestionsSet.addAll(mathQuestionService.getAll());
+            return randomQuestionsSet;
         } else {
-            while (newQuestionsSet.size() < amount) {
-                newQuestionsSet.add(questionService.getRandomQuestion());
+            while (randomQuestionsSet.size() < randomIndex) {
+                randomQuestionsSet.add(javaQuestionService.getRandomQuestion());
             }
-            return newQuestionsSet;
+            while (randomQuestionsSet.size() < amount) {
+                randomQuestionsSet.add(mathQuestionService.getRandomQuestion());
+            }
+            return randomQuestionsSet;
         }
     }
 }
